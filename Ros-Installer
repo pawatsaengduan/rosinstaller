@@ -325,11 +325,11 @@ Usage: Ros-Installer [options]
 ROS Installer is a tool to install ROS easy with this file.
 So you can install or uninstall ROS that you want.
 
-All commands:
-  [h|help|-h|--help]       Help - See all commands in ros installer
-  [v|version|-v|--version]    Version - See ros installer version
-  [i|install|-i|--install]    Install - Install ROS
-  [u|uninstall|-u|--uninstall]  Uninstall - Uninstall ROS
+Available commands:
+  h, help, -h, --help              See all commands in ros installer
+  v, version, -v, --version        See ros installer version
+  i, install, -i, --install        Install ROS
+  u, |uninstall, -u, --uninstall   Uninstall ROS
 
 EOF
 }
