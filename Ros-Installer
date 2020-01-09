@@ -158,7 +158,7 @@ rosInstaller() {
 				sh -c "echo \"alias cmi='cd $HOME/catkin_ws && /opt/ros/kinetic/bin/catkin_make -j$numberproc install && source $HOME/catkin_ws/devel/setup.bash'\" >> ~/.bashrc"
 				sh -c "echo \"alias cmiso='cd $HOME/catkin_ws && /opt/ros/kinetic/bin/catkin_make_isolated -j$numberproc && source $HOME/catkin_ws/devel/setup.bash'\" >> ~/.bashrc"
 
-				sh -c "echo \"source /opt/ros/melodic/setup.bash\" >> ~/.bashrc"
+				sh -c "echo \"source /opt/ros/kinetic/setup.bash\" >> ~/.bashrc"
 				sh -c "echo \"source $HOME/catkin_ws/devel/setup.bash\" >> ~/.bashrc"
 
 				sh -c "echo \"export ROS_MASTER_URI=http://localhost:11311\" >> ~/.bashrc"
