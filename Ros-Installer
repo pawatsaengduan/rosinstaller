@@ -249,10 +249,10 @@ rosInstaller() {
 					mkdir -p $HOME/catkin_ws/src
 				fi
 				cd $HOME/catkin_ws/src
-				/opt/ros/kinetic/bin/catkin_init_workspace
+				/opt/ros/melodic/bin/catkin_init_workspace
 				cd $HOME/catkin_ws
-				/opt/ros/kinetic/bin/catkin_make -j$numberproc
-				/opt/ros/kinetic/bin/catkin_make -j$numberproc install
+				/opt/ros/melodic/bin/catkin_make -j$numberproc
+				/opt/ros/melodic/bin/catkin_make -j$numberproc install
 	 
 				echo
 				echo "[ROS] setup the ros environment"
@@ -263,9 +263,9 @@ rosInstaller() {
 				sh -c "echo \"alias gp='/usr/bin/git pull'\" >> ~/.bashrc"
 				sh -c "echo \"alias cw='cd $HOME/catkin_ws'\" >> ~/.bashrc"
 				sh -c "echo \"alias cs='cd $HOME/catkin_ws/src'\" >> ~/.bashrc"
-				sh -c "echo \"alias cm='cd $HOME/catkin_ws && /opt/ros/kinetic/bin/catkin_make -j$numberproc && source $HOME/catkin_ws/devel/setup.bash'\" >> ~/.bashrc"
-				sh -c "echo \"alias cmi='cd $HOME/catkin_ws && /opt/ros/kinetic/bin/catkin_make -j$numberproc install && source $HOME/catkin_ws/devel/setup.bash'\" >> ~/.bashrc"
-				sh -c "echo \"alias cmiso='cd $HOME/catkin_ws && /opt/ros/kinetic/bin/catkin_make_isolated -j$numberproc && source $HOME/catkin_ws/devel/setup.bash'\" >> ~/.bashrc"
+				sh -c "echo \"alias cm='cd $HOME/catkin_ws && /opt/ros/melodic/bin/catkin_make -j$numberproc && source $HOME/catkin_ws/devel/setup.bash'\" >> ~/.bashrc"
+				sh -c "echo \"alias cmi='cd $HOME/catkin_ws && /opt/ros/melodic/bin/catkin_make -j$numberproc install && source $HOME/catkin_ws/devel/setup.bash'\" >> ~/.bashrc"
+				sh -c "echo \"alias cmiso='cd $HOME/catkin_ws && /opt/ros/melodic/bin/catkin_make_isolated -j$numberproc && source $HOME/catkin_ws/devel/setup.bash'\" >> ~/.bashrc"
 
 				sh -c "echo \"source /opt/ros/melodic/setup.bash\" >> ~/.bashrc"
 				sh -c "echo \"source $HOME/catkin_ws/devel/setup.bash\" >> ~/.bashrc"
