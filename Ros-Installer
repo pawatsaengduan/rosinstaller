@@ -313,6 +313,7 @@ usage() {
 	cat <<EOF
 ROS Installer $VERSION
 Usage: ROS Installer [-v|-i|-h|-u]
+
 EOF
 }
 
@@ -326,10 +327,10 @@ ROS Installer is a tool to install ROS easy with this file.
 So you can install or uninstall ROS that you want.
 
 Available commands:
-  h, help, -h, --help              See all commands in ros installer
+  h, help, -h, --help              See help in ros installer
   v, version, -v, --version        See ros installer version
   i, install, -i, --install        Install ROS
-  u, |uninstall, -u, --uninstall   Uninstall ROS
+  u, uninstall, -u, --uninstall   Uninstall ROS
 
 EOF
 }
@@ -340,5 +341,5 @@ case "$1" in
 	v|-v|--version|version) echo "ROS Installer v.$VERSION";;
 	i|-i|--install|install) rosInstaller;;
 	u|-u|--uninstall|uninstall) Uninstall;;
-	*) usage && echo && echo "See \"./Ros-Installer -h\" for more usage";;
+	*) usage && echo "See \"./Ros-Installer -h\" for more usage";;
 esac
