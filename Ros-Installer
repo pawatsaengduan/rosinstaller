@@ -3,22 +3,42 @@
 
 # Setup Variables
 SHELL=/bin/bash
-VERSION=1.1
-EDITION=FULL
+VERSION=1.2
+EDITION=FULLRELEASE
 osver16=`lsb_release -a 2>/dev/null | grep -o 'xenial' 2>/dev/null`
 osver18=`lsb_release -a 2>/dev/null | grep -o 'bionic' 2>/dev/null`
 numberproc=`nproc`
+command_status="\u274c"	
 
 # Need Sudo
-needSudo=`sudo apt-get help 2>/dev/null`
+needSudo1=`sudo apt-get install notify-osd pulseaudio-utils libnotify-bin --assume-yes 2>/dev/null`
+needSudo2=`sudo apt-get install libnotify-bin notify-osd --assume-yes --reinstall 2>/dev/null`
 
 ## <<FUNCTIONS
 # Confirm Restart Functions
-confirmRestart() {
+confirmRestartInstall() {
+	command_status="\u2705"
+	notify-send "ROS Installer $(echo -e $command_status)" \
+	  "Install Complete" \
+	  -i utilities-terminal \
+      -t 3800
 	read -r -p "Do you want to restart your terminal right now? [Y/n] " RESTARTING
 	case "$RESTARTING" in
 		[yY][eE][sS] | [yY] ) echo "[INSTALLER] Complete Install!" && source $HOME/.bashrc && reset && clear && exit 0;;
 		[nN][oO] | [nN] | [aA][bB][oO][rR][tT] | * ) echo "[INSTALLER] Complete Install!, Please re-source .bashrc or restart terminal!";;
+	esac
+}
+
+confirmRestartUninstall() {
+	command_status="\u2705"
+	notify-send "ROS Installer $(echo -e $command_status)" \
+	  "Uninstall Complete" \
+	  -i utilities-terminal \
+      -t 3800
+	read -r -p "Do you want to restart your terminal right now? [Y/n] " RESTARTING
+	case "$RESTARTING" in
+		[yY][eE][sS] | [yY] ) echo "[INSTALLER] Complete Uninstall!" && source $HOME/.bashrc && reset && clear && exit 0;;
+		[nN][oO] | [nN] | [aA][bB][oO][rR][tT] | * ) echo "[INSTALLER] Complete Uninstall!, Please re-source .bashrc or restart terminal!";;
 	esac
 }
 
@@ -28,19 +48,33 @@ rosInstaller() {
 	echo
 	echo "  Selection    ROS Distro        Linux Distro       Status"
 	echo "-------------------------------------------------------"
-	if [[ $osver16 == "xenial" ]]; then
+	if [[ $osver16 == "xenial" || $osver16 == "sylvia" || $osver16 == "sonya" || $osver16 == "serena" || $osver16 == "sarah" ]]; then
 		echo "* 0            Kinetic Kame       Xenial (16.04)    auto mode"
 		echo "  1            Melodic Morenia    Bionic (18.04)    manual mode"
-	elif [[ $osver18 == "bionic" ]]; then
+	elif [[ $osver18 == "bionic" || $osver18 == "trica" || $osver18 == "tina" || $osver18 == "tessa" || $osver18 == "tara" ]]; then
 		echo "  0            Kinetic Kame       Xenial (16.04)    manual mode"
 		echo "* 1            Melodic Morenia    Bionic (18.04)    auto mode"
 	else
 		echo "  No, Options!"
 		echo "  Sorry, Your OS is not supported!"
 		echo
-		echo "  Supported OS is: "
-				echo "  - Ubuntu 16.04 LTS (Xenial)  >>>  ROS Kinetic Kame"
-				echo "  - Ubuntu 18.04 LTS (Bionic)  >>>  ROS Melodic Morenia"
+		echo "  + Supported OS is: "
+		echo "  |"
+		echo "  |-- + Ubuntu Distribution: "
+		echo "  |   |"
+		echo "  |   |-- Ubuntu 16.04 LTS (Xenial)  >>>  ROS Kinetic Kame"
+		echo "  |   |-- Ubuntu 18.04 LTS (Bionic)  >>>  ROS Melodic Morenia"
+		echo "  |"
+		echo "  |-- + Linux Mint Distribution: "
+		echo "      |"
+		echo "      |-- Linux Mint 18.x  (Ubuntu Distro Xenial)  >>>  ROS Kinetic Kame"
+		echo "      |-- Linux Mint 19.x  (Ubuntu Distro Bionic)  >>>  ROS Melodic Morenia"
+		echo
+		notify-send "ROS Installer $(echo -e $command_status)" \
+		  "Your OS not compatible with ROS" \
+		  -i utilities-terminal \
+          -t 5000
+
 		exit 1
 	fi
 	echo
@@ -48,14 +82,18 @@ rosInstaller() {
 	read -p "Press <enter> to keep the current choice[*], or type selection number: " ROSSELECTION
 
 	while [[ $ROSSELECTION != 1 && $ROSSELECTION != 0 && -n $ROSSELECTION ]]; do
+		notify-send "ROS Installer $(echo -e $command_status)" \
+		  "Please insert selection" \
+		  -i utilities-terminal \
+          -t 2500
 		echo "There are 2 choices to install ROS (providing /opt/ros)."
 		echo
 		echo "  Selection    ROS Distro        Linux Distro       Status"
 		echo "-------------------------------------------------------"
-		if [[ $osver16 == "xenial" ]]; then
+		if [[ $osver16 == "xenial" || $osver16 == "sylvia" || $osver16 == "sonya" || $osver16 == "serena" || $osver16 == "sarah" ]]; then
 			echo "* 0            Kinetic Kame       Xenial (16.04)    auto mode"
 			echo "  1            Melodic Morenia    Bionic (18.04)    manual mode"
-		elif [[ $osver18 == "bionic" ]]; then
+		elif [[ $osver18 == "bionic" || $osver18 == "trica" || $osver18 == "tina" || $osver18 == "tessa" || $osver18 == "tara" ]]; then
 			echo "  0            Kinetic Kame       Xenial (16.04)    manual mode"
 			echo "* 1            Melodic Morenia    Bionic (18.04)    auto mode"
 		fi
@@ -67,7 +105,7 @@ rosInstaller() {
 	done;
 
 	while true; do
-		if [[ $osver16 == "xenial" ]]; then
+		if [[ $osver16 == "xenial" || $osver16 == "sylvia" || $osver16 == "sonya" || $osver16 == "serena" || $osver16 == "sarah" ]]; then
 			if [[ $ROSSELECTION == 0 || -z $ROSSELECTION ]]; then
 				echo
 				echo
@@ -143,7 +181,7 @@ rosInstaller() {
 
 				echo
 				echo "[INFO] Setting Up ROS Environment"
-				sh -c "echo \"# ROS Environment\" >> $HOME/.bashrc" 
+				sh -c "echo \"\n# ROS Environment\" >> $HOME/.bashrc" 
 				sh -c "echo \"alias eb='/bin/nano $HOME/.bashrc'\" >> $HOME/.bashrc"
 				sh -c "echo \"alias sb='source $HOME/.bashrc'\" >> $HOME/.bashrc"
 				sh -c "echo \"alias gc='/usr/bin/git clone'\" >> $HOME/.bashrc"
@@ -151,8 +189,8 @@ rosInstaller() {
 				sh -c "echo \"alias gp='/usr/bin/git pull'\" >> $HOME/.bashrc"
 				sh -c "echo \"alias cw='cd $HOME/catkin_ws'\" >> $HOME/.bashrc"
 				sh -c "echo \"alias cs='cd $HOME/catkin_ws/src'\" >> $HOME/.bashrc"
-				sh -c "echo \"alias cm='source /opt/ros/kinetic/setup.bash && source $HOME/catkin_ws/devel/setup.bash && cd $HOME/catkin_ws && /opt/ros/kinetic/bin/catkin_make -j$numberproc && source /opt/ros/kinetic/setup.bash && source $HOME/catkin_ws/devel/setup.bash \" >> $HOME/.bashrc"
-				sh -c "echo \"alias cmi='source /opt/ros/kinetic/setup.bash && source $HOME/catkin_ws/devel/setup.bash && cd $HOME/catkin_ws && /opt/ros/kinetic/bin/catkin_make -j$numberproc install && source /opt/ros/kinetic/setup.bash && source $HOME/catkin_ws/devel/setup.bash \" >> $HOME/.bashrc"
+				sh -c "echo \"alias cm='source /opt/ros/kinetic/setup.bash && source $HOME/catkin_ws/devel/setup.bash && cd $HOME/catkin_ws && /opt/ros/kinetic/bin/catkin_make -j$numberproc && source /opt/ros/kinetic/setup.bash && source $HOME/catkin_ws/devel/setup.bash'\" >> $HOME/.bashrc"
+				sh -c "echo \"alias cmi='source /opt/ros/kinetic/setup.bash && source $HOME/catkin_ws/devel/setup.bash && cd $HOME/catkin_ws && /opt/ros/kinetic/bin/catkin_make -j$numberproc install && source /opt/ros/kinetic/setup.bash && source $HOME/catkin_ws/devel/setup.bash'\" >> $HOME/.bashrc"
 				sh -c "echo \"alias cmiso='source /opt/ros/kinetic/setup.bash && source $HOME/catkin_ws/devel/setup.bash && cd $HOME/catkin_ws && /opt/ros/kinetic/bin/catkin_make_isolated -j$numberproc && source /opt/ros/kinetic/setup.bash && source $HOME/catkin_ws/devel/setup.bash'\" >> $HOME/.bashrc"
 
 				sh -c "echo \"source /opt/ros/kinetic/setup.bash\" >> $HOME/.bashrc"
@@ -166,15 +204,21 @@ rosInstaller() {
 
 				echo
 				echo
-				confirmRestart
+				confirmRestartInstall
 
 				exit 0
 			elif [[ $ROSSELECTION == 1 ]]; then
-				echo "[ERROR] Sorry, Your Ubuntu $(lsb_release -sc) not compatible with ROS Melodic Morenia!"
+				command_status="\u274c"
+				notify-send "ROS Installer $(echo -e $command_status)" \
+		  		  "Your OS not compatible with ROS Melodic Morenia!" \
+		  		  -i utilities-terminal \
+          		  -t 5000
+				echo
+				echo "[ERROR] Sorry, Your OS not compatible with ROS Melodic Morenia!"
 			fi
 		fi
 
-		if [[ $osver18 == "bionic" ]]; then
+		if [[ $osver18 == "bionic" || $osver18 == "trica" || $osver18 == "tina" || $osver18 == "tessa" || $osver18 == "tara" ]]; then
 			if [[ $ROSSELECTION == 1 || -z $ROSSELECTION ]]; then
 				echo
 				echo
@@ -251,7 +295,7 @@ rosInstaller() {
 
 				echo
 				echo "[INFO] Setting Up ROS Environment"
-				sh -c "echo \"# ROS Environment\" >> $HOME/.bashrc" 
+				sh -c "echo \"\n# ROS Environment\" >> $HOME/.bashrc" 
 				sh -c "echo \"alias eb='/bin/nano $HOME/.bashrc'\" >> $HOME/.bashrc"
 				sh -c "echo \"alias sb='source $HOME/.bashrc'\" >> $HOME/.bashrc"
 				sh -c "echo \"alias gc='/usr/bin/git clone'\" >> $HOME/.bashrc"
@@ -259,8 +303,8 @@ rosInstaller() {
 				sh -c "echo \"alias gp='/usr/bin/git pull'\" >> $HOME/.bashrc"
 				sh -c "echo \"alias cw='cd $HOME/catkin_ws'\" >> $HOME/.bashrc"
 				sh -c "echo \"alias cs='cd $HOME/catkin_ws/src'\" >> $HOME/.bashrc"
-				sh -c "echo \"alias cm='source /opt/ros/melodic/setup.bash && source $HOME/catkin_ws/devel/setup.bash && cd $HOME/catkin_ws && /opt/ros/melodic/bin/catkin_make -j$numberproc && source /opt/ros/melodic/setup.bash && source $HOME/catkin_ws/devel/setup.bash \" >> $HOME/.bashrc"
-				sh -c "echo \"alias cmi='source /opt/ros/melodic/setup.bash && source $HOME/catkin_ws/devel/setup.bash && cd $HOME/catkin_ws && /opt/ros/melodic/bin/catkin_make -j$numberproc install && source /opt/ros/melodic/setup.bash && source $HOME/catkin_ws/devel/setup.bash \" >> $HOME/.bashrc"
+				sh -c "echo \"alias cm='source /opt/ros/melodic/setup.bash && source $HOME/catkin_ws/devel/setup.bash && cd $HOME/catkin_ws && /opt/ros/melodic/bin/catkin_make -j$numberproc && source /opt/ros/melodic/setup.bash && source $HOME/catkin_ws/devel/setup.bash'\" >> $HOME/.bashrc"
+				sh -c "echo \"alias cmi='source /opt/ros/melodic/setup.bash && source $HOME/catkin_ws/devel/setup.bash && cd $HOME/catkin_ws && /opt/ros/melodic/bin/catkin_make -j$numberproc install && source /opt/ros/melodic/setup.bash && source $HOME/catkin_ws/devel/setup.bash'\" >> $HOME/.bashrc"
 				sh -c "echo \"alias cmiso='source /opt/ros/melodic/setup.bash && source $HOME/catkin_ws/devel/setup.bash && cd $HOME/catkin_ws && /opt/ros/melodic/bin/catkin_make_isolated -j$numberproc && source /opt/ros/melodic/setup.bash && source $HOME/catkin_ws/devel/setup.bash'\" >> $HOME/.bashrc"
 
 				sh -c "echo \"source /opt/ros/melodic/setup.bash\" >> $HOME/.bashrc"
@@ -274,10 +318,16 @@ rosInstaller() {
 
 				echo
 				echo
-				confirmRestart
+				confirmRestartInstall
 				exit 0
 			elif [[ $ROSSELECTION == 0 ]]; then
-				echo "[ERROR] Sorry, Your Ubuntu $(lsb_release -sc) not compatible with ROS Kinetic Kame!"
+				command_status="\u274c"
+				notify-send "ROS Installer $(echo -e $command_status)" \
+		  		  "Your OS not compatible with ROS Kinetic Kame!" \
+		  		  -i utilities-terminal \
+          		  -t 5000
+				echo
+				echo "[ERROR] Sorry, Your OS not compatible with ROS Kinetic Kame!"
 			fi
 		fi
 	break;
@@ -296,10 +346,11 @@ rosUninstall() {
 	echo "IF YOU WANT TO CANCEL, PRESS [CTRL] + [C]"
 	echo
 	echo "[UNINSTALER] Uninstalling ROS... "
-	sudo apt-get purge ros-melodic* --assume-yes 2>/dev/null
-	sudo apt-get purge ros-kinetic* --assume-yes 2>/dev/null
+	sudo apt-get remove ros-melodic* --purge --assume-yes 2>/dev/null
+	sudo apt-get purge ros-kinetic* --purge --assume-yes 2>/dev/null
+	sudo apt-get autoremove --purge --assume-yes 2>/dev/null
 	echo "[UNINSTALER] Complete Uninstall ROS!!"
-	confirmRestart
+	confirmRestartUninstall
 	exit 0
 }
 ## FUNCTIONS>>
