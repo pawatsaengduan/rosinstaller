@@ -395,6 +395,6 @@ case "$1" in
 	h|-h|--help|help) help;;
 	v|-v|--version|version) echo "ROS Installer v.$VERSION";;
 	i|-i|--install|install) rosInstaller;;
-	u|-u|--uninstall|uninstall) Uninstall;;
+	u|-u|--uninstall|uninstall) rosUninstall;;
 	*) usage && echo "See \"./Ros-Installer -h\" for more usage";;
 esac
