@@ -11,7 +11,7 @@ numberproc=`nproc`
 command_status="\u274c"	
 
 # Need Sudo
-echo("[INSTALLER] INSTALL DEPENDENCIES LIBRARIES")
+echo "[INSTALLER] INSTALL DEPENDENCIES LIBRARIES"
 needSudo1=`sudo apt-get install notify-osd pulseaudio-utils libnotify-bin --assume-yes 2>/dev/null`
 needSudo2=`sudo apt-get install libnotify-bin notify-osd --assume-yes --reinstall 2>/dev/null`
 
