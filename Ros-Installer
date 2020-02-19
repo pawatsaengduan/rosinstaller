@@ -12,10 +12,23 @@ command_status="\u274c"
 
 # Need Sudo
 echo "[INSTALLER] INSTALL DEPENDENCIES LIBRARIES"
-needSudo1=`sudo apt-get install notify-osd pulseaudio-utils libnotify-bin --assume-yes 2>/dev/null`
-needSudo2=`sudo apt-get install libnotify-bin notify-osd --assume-yes --reinstall 2>/dev/null`
-
+needSudo1=`sudo apt-get install notify-osd pulseaudio-utils libnotify-bin --assume-yes 2>/dev/null` || ErrorTrue
+needSudo2=`sudo apt-get install libnotify-bin notify-osd --assume-yes --reinstall 2>/dev/null` || ErrorTrue
 ## <<FUNCTIONS
+# DownloadKeys
+DownloadKeys() {
+	sudo apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654 || curl -sSL 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xC1CF6E31E6BADE8868B172B4F42ED6FBAB17C654' | sudo apt-key add -
+}
+
+# ErrorTrue
+ErrorTrue() {
+	notify-send "ROS Installer $(echo -e $command_status)" \
+	  	"An error was occurred, Please try again later" \
+		-i utilities-terminal \
+        -t 5000
+	exit 127
+}
+
 # Confirm Restart Functions
 confirmRestartInstall() {
 	command_status="\u2705"
@@ -34,7 +47,9 @@ confirmRestartInstall() {
 			[yY][eE][sS] | [yY] ) echo "[INSTALLER] Complete Install!" && source $HOME/.bashrc && reset && source /opt/ros/melodic/setup.bash && clear && exit 0;;
 			[nN][oO] | [nN] | [aA][bB][oO][rR][tT] | * ) echo "[INSTALLER] Complete Install!, Please re-source .bashrc or restart terminal!";;
 		esac
+	else
 	fi
+
 }
 
 confirmRestartUninstall() {
@@ -126,39 +141,39 @@ rosInstaller() {
 				read
 
 				echo "[INFO] Update and Upgrade the packages"
-				sudo apt-get update --assume-yes
-				sudo apt-get upgrade --assume-yes
-				sudo apt-get dist-upgrade --assume-yes
-				sudo apt-get autoremove --purge --assume-yes
+				sudo apt-get update --assume-yes || ErrorTrue
+				sudo apt-get upgrade --assume-yes || ErrorTrue
+				sudo apt-get dist-upgrade --assume-yes || ErrorTrue
+				sudo apt-get autoremove --purge --assume-yes || ErrorTrue
 
 				echo
 				echo "[INFO] Install an Optional dependencies"
-				sudo apt-get install git curl chrony ntpdate build-essential --assume-yes
-				sudo ntpdate ntp.ubuntu.com
+				sudo apt-get install git curl chrony ntpdate build-essential --assume-yes || ErrorTrue
+				sudo ntpdate ntp.ubuntu.com || ErrorTrue
 
 				echo
 				echo "[INFO] Add the ROS Repository"
 				if [ ! -e /etc/apt/sources.list.d/ros-latest.list ]; then
-					sudo sh -c "echo \"deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main\" > /etc/apt/sources.list.d/ros-latest.list"
+					sudo sh -c "echo \"deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main\" > /etc/apt/sources.list.d/ros-latest.list" || ErrorTrue
 				fi
 
 				echo "[INFO] Checking the ROS Keys"
 				roskey=`sudo apt-key list | grep "Open Robotics"`
 				if [ -z "$roskey" ]; then
 					echo "[INFO] Not Found, Download ROS Keys..."
-					sudo apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654 || curl -sSL 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xC1CF6E31E6BADE8868B172B4F42ED6FBAB17C654' | sudo apt-key add - 2>/dev/null
+					DownloadKeys || ErrorTrue
 				elif [ -n "$roskey" ]; then
 					echo "[INFO] Now ROS was exists in the key lists"
 				fi
 
 				echo
 				echo "[INFO] Update and Upgrade the packages"
-				sudo apt-get update --assume-yes
-				sudo apt-get upgrade --assume-yes
+				sudo apt-get update --assume-yes || ErrorTrue
+				sudo apt-get upgrade --assume-yes || ErrorTrue
 
 				echo
 				echo "[INFO] Install ROS Kinetic as Full Desktop & All ROS rqt"
-				sudo apt-get install ros-kinetic-desktop-full* ros-kinetic-rqt* --assume-yes
+				sudo apt-get install ros-kinetic-desktop-full* ros-kinetic-rqt* --assume-yes || ErrorTrue
 
 				echo
 				echo "[INFO] Initialize rosdep"
@@ -172,40 +187,40 @@ rosInstaller() {
 
 				echo
 				echo "[INFO] Getting ROS Dependencies and Get temporary ROS environment"
-				source /opt/ros/kinetic/setup.bash
-				sudo apt install python-rosinstall python-rosinstall-generator python-wstool build-essential --assume-yes
+				source /opt/ros/kinetic/setup.bash || ErrorTrue
+				sudo apt install python-rosinstall python-rosinstall-generator python-wstool build-essential --assume-yes || ErrorTrue
 
 				echo
 				echo "[INFO] Create the Catkin Workspace"
 				if [ ! -d catkin_ws/src ]; then
-					mkdir -p $HOME/catkin_ws/src
+					mkdir -p $HOME/catkin_ws/src || ErrorTrue
 				fi
 
-				cd $HOME/catkin_ws/src
-				/opt/ros/kinetic/bin/catkin_init_workspace
-				cd $HOME/catkin_ws
-				/opt/ros/kinetic/bin/catkin_make -j$numberproc
-				/opt/ros/kinetic/bin/catkin_make -j$numberproc install
+				cd $HOME/catkin_ws/src || ErrorTrue
+				/opt/ros/kinetic/bin/catkin_init_workspace || ErrorTrue
+				cd $HOME/catkin_ws || ErrorTrue
+				/opt/ros/kinetic/bin/catkin_make -j$numberproc || ErrorTrue
+				/opt/ros/kinetic/bin/catkin_make -j$numberproc install || ErrorTrue
 
 				echo
 				echo "[INFO] Setting Up ROS Environment"
-				sh -c "echo \"\n# ROS Environment\" >> $HOME/.bashrc" 
-				sh -c "echo \"alias eb='/bin/nano $HOME/.bashrc'\" >> $HOME/.bashrc"
-				sh -c "echo \"alias sb='source $HOME/.bashrc'\" >> $HOME/.bashrc"
-				sh -c "echo \"alias gc='/usr/bin/git clone'\" >> $HOME/.bashrc"
-				sh -c "echo \"alias gs='/usr/bin/git status'\" >> $HOME/.bashrc"
-				sh -c "echo \"alias gp='/usr/bin/git pull'\" >> $HOME/.bashrc"
-				sh -c "echo \"alias cw='cd $HOME/catkin_ws'\" >> $HOME/.bashrc"
-				sh -c "echo \"alias cs='cd $HOME/catkin_ws/src'\" >> $HOME/.bashrc"
-				sh -c "echo \"alias cm='source /opt/ros/kinetic/setup.bash && source $HOME/catkin_ws/devel/setup.bash && cd $HOME/catkin_ws && /opt/ros/kinetic/bin/catkin_make -j$numberproc && source /opt/ros/kinetic/setup.bash && source $HOME/catkin_ws/devel/setup.bash'\" >> $HOME/.bashrc"
-				sh -c "echo \"alias cmi='source /opt/ros/kinetic/setup.bash && source $HOME/catkin_ws/devel/setup.bash && cd $HOME/catkin_ws && /opt/ros/kinetic/bin/catkin_make -j$numberproc install && source /opt/ros/kinetic/setup.bash && source $HOME/catkin_ws/devel/setup.bash'\" >> $HOME/.bashrc"
-				sh -c "echo \"alias cmiso='source /opt/ros/kinetic/setup.bash && source $HOME/catkin_ws/devel/setup.bash && cd $HOME/catkin_ws && /opt/ros/kinetic/bin/catkin_make_isolated -j$numberproc && source /opt/ros/kinetic/setup.bash && source $HOME/catkin_ws/devel/setup.bash'\" >> $HOME/.bashrc"
+				sh -c "echo \"\n# ROS Environment\" >> $HOME/.bashrc" || ErrorTrue
+				sh -c "echo \"alias eb='/bin/nano $HOME/.bashrc'\" >> $HOME/.bashrc" || ErrorTrue
+				sh -c "echo \"alias sb='source $HOME/.bashrc'\" >> $HOME/.bashrc" || ErrorTrue
+				sh -c "echo \"alias gc='/usr/bin/git clone'\" >> $HOME/.bashrc" || ErrorTrue
+				sh -c "echo \"alias gs='/usr/bin/git status'\" >> $HOME/.bashrc" || ErrorTrue
+				sh -c "echo \"alias gp='/usr/bin/git pull'\" >> $HOME/.bashrc" || ErrorTrue
+				sh -c "echo \"alias cw='cd $HOME/catkin_ws'\" >> $HOME/.bashrc" || ErrorTrue
+				sh -c "echo \"alias cs='cd $HOME/catkin_ws/src'\" >> $HOME/.bashrc" || ErrorTrue
+				sh -c "echo \"alias cm='export OLDSOURCEPATH=`pwd` && source /opt/ros/kinetic/setup.bash && source $HOME/catkin_ws/devel/setup.bash && cd $HOME/catkin_ws && /opt/ros/kinetic/bin/catkin_make -j$numberproc && source /opt/ros/kinetic/setup.bash && source $HOME/catkin_ws/devel/setup.bash && cd $OLDSOURCEPATH'\" >> $HOME/.bashrc" || ErrorTrue
+				sh -c "echo \"alias cmi='export OLDSOURCEPATH=`pwd` source /opt/ros/kinetic/setup.bash && source $HOME/catkin_ws/devel/setup.bash && cd $HOME/catkin_ws && /opt/ros/kinetic/bin/catkin_make -j$numberproc install && source /opt/ros/kinetic/setup.bash && source $HOME/catkin_ws/devel/setup.bash && cd $OLDSOURCEPATH'\" >> $HOME/.bashrc" || ErrorTrue
+				sh -c "echo \"alias cmiso='export OLDSOURCEPATH=`pwd` source /opt/ros/kinetic/setup.bash && source $HOME/catkin_ws/devel/setup.bash && cd $HOME/catkin_ws && /opt/ros/kinetic/bin/catkin_make_isolated -j$numberproc && source /opt/ros/kinetic/setup.bash && source $HOME/catkin_ws/devel/setup.bash && cd $OLDSOURCEPATH'\" >> $HOME/.bashrc" || ErrorTrue
 
-				sh -c "echo \"source /opt/ros/kinetic/setup.bash\" >> $HOME/.bashrc"
-				sh -c "echo \"source $HOME/catkin_ws/devel/setup.bash\" >> $HOME/.bashrc"
+				sh -c "echo \"source /opt/ros/kinetic/setup.bash\" >> $HOME/.bashrc" || ErrorTrue
+				sh -c "echo \"source $HOME/catkin_ws/devel/setup.bash\" >> $HOME/.bashrc" || ErrorTrue
 
-				sh -c "echo \"export ROS_MASTER_URI=http://localhost:11311\" >> $HOME/.bashrc"
-				sh -c "echo \"export ROS_HOSTNAME=localhost\" >> $HOME/.bashrc"
+				sh -c "echo \"export ROS_MASTER_URI=http://localhost:11311\" >> $HOME/.bashrc" || ErrorTrue
+				sh -c "echo \"export ROS_HOSTNAME=localhost\" >> $HOME/.bashrc" || ErrorTrue
 				echo "[INFO] ROS Environment was exists in the environment"
 
 				source $HOME/.bashrc
@@ -240,39 +255,39 @@ rosInstaller() {
 				read
 
 				echo "[INFO] Update and Upgrade the packages"
-				sudo apt-get update --assume-yes
-				sudo apt-get upgrade --assume-yes
-				sudo apt-get dist-upgrade --assume-yes
-				sudo apt-get autoremove --purge --assume-yes
+				sudo apt-get update --assume-yes || ErrorTrue
+				sudo apt-get upgrade --assume-yes || ErrorTrue
+				sudo apt-get dist-upgrade --assume-yes || ErrorTrue
+				sudo apt-get autoremove --purge --assume-yes || ErrorTrue
 
 				echo
 				echo "[INFO] Install an Optional dependencies"
-				sudo apt-get install git curl chrony ntpdate build-essential --assume-yes
-				sudo ntpdate ntp.ubuntu.com
+				sudo apt-get install git curl chrony ntpdate build-essential --assume-yes || ErrorTrue
+				sudo ntpdate ntp.ubuntu.com || ErrorTrue
 
 				echo
 				echo "[INFO] Add the ROS Repository"
 				if [ ! -e /etc/apt/sources.list.d/ros-latest.list ]; then
-					sudo sh -c "echo \"deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main\" > /etc/apt/sources.list.d/ros-latest.list"
+					sudo sh -c "echo \"deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main\" > /etc/apt/sources.list.d/ros-latest.list" || ErrorTrue
 				fi
 
 				echo "[INFO] Checking the ROS Keys"
 				roskey=`sudo apt-key list | grep "Open Robotics"`
 				if [ -z "$roskey" ]; then
 					echo "[INFO] Not Found, Download ROS Keys..."
-					sudo apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654 || curl -sSL 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xC1CF6E31E6BADE8868B172B4F42ED6FBAB17C654' | sudo apt-key add - 2>/dev/null
+					DownloadKeys || ErrorTrue
 				elif [ -n "$roskey" ]; then
 					echo "[INFO] Now ROS was exists in the key lists"
 				fi
 
 				echo
 				echo "[INFO] Update and Upgrade the packages"
-				sudo apt-get update --assume-yes
-				sudo apt-get upgrade --assume-yes
+				sudo apt-get update --assume-yes || ErrorTrue
+				sudo apt-get upgrade --assume-yes || ErrorTrue
 
 				echo
-				echo "[INFO] Install ROS Kinetic as Full Desktop & All ROS rqt"
-				sudo apt-get install ros-melodic-desktop-full ros-melodic-rqt-* --assume-yes
+				echo "[INFO] Install ROS Melodic as Full Desktop & All ROS rqt"
+				sudo apt-get install ros-melodic-desktop-full ros-melodic-rqt-* --assume-yes || ErrorTrue
 
 				echo
 				echo "[INFO] Initialize rosdep"
@@ -286,56 +301,56 @@ rosInstaller() {
 
 				echo
 				echo "[INFO] Getting ROS Dependencies and Get temporary ROS environment"
-				source /opt/ros/melodic/setup.bash
-				sudo apt install python-rosinstall python-rosinstall-generator python-wstool build-essential --assume-yes
+				source /opt/ros/melodic/setup.bash || ErrorTrue
+				sudo apt install python-rosinstall python-rosinstall-generator python-wstool build-essential --assume-yes || ErrorTrue
 
 				echo
 				echo "[INFO] Create the Catkin Workspace"
 				if [ ! -d catkin_ws/src ]; then
-					mkdir -p $HOME/catkin_ws/src
+					mkdir -p $HOME/catkin_ws/src || ErrorTrue
 				fi
 
-				cd $HOME/catkin_ws/src
+				cd $HOME/catkin_ws/src || ErrorTrue
 				/opt/ros/melodic/bin/catkin_init_workspace
-				cd $HOME/catkin_ws
-				/opt/ros/melodic/bin/catkin_make -j$numberproc
-				/opt/ros/melodic/bin/catkin_make -j$numberproc install
+				cd $HOME/catkin_ws || ErrorTrue
+				/opt/ros/melodic/bin/catkin_make -j$numberproc || ErrorTrue
+				/opt/ros/melodic/bin/catkin_make -j$numberproc install || ErrorTrue
 
 				echo
 				echo "[INFO] Setting Up ROS Environment"
-				sh -c "echo \"\n# ROS Environment\" >> $HOME/.bashrc" 
-				sh -c "echo \"alias eb='/bin/nano $HOME/.bashrc'\" >> $HOME/.bashrc"
-				sh -c "echo \"alias sb='source $HOME/.bashrc'\" >> $HOME/.bashrc"
-				sh -c "echo \"alias gc='/usr/bin/git clone'\" >> $HOME/.bashrc"
-				sh -c "echo \"alias gs='/usr/bin/git status'\" >> $HOME/.bashrc"
-				sh -c "echo \"alias gp='/usr/bin/git pull'\" >> $HOME/.bashrc"
-				sh -c "echo \"alias cw='cd $HOME/catkin_ws'\" >> $HOME/.bashrc"
-				sh -c "echo \"alias cs='cd $HOME/catkin_ws/src'\" >> $HOME/.bashrc"
-				sh -c "echo \"alias cm='source /opt/ros/melodic/setup.bash && source $HOME/catkin_ws/devel/setup.bash && cd $HOME/catkin_ws && /opt/ros/melodic/bin/catkin_make -j$numberproc && source /opt/ros/melodic/setup.bash && source $HOME/catkin_ws/devel/setup.bash'\" >> $HOME/.bashrc"
-				sh -c "echo \"alias cmi='source /opt/ros/melodic/setup.bash && source $HOME/catkin_ws/devel/setup.bash && cd $HOME/catkin_ws && /opt/ros/melodic/bin/catkin_make -j$numberproc install && source /opt/ros/melodic/setup.bash && source $HOME/catkin_ws/devel/setup.bash'\" >> $HOME/.bashrc"
-				sh -c "echo \"alias cmiso='source /opt/ros/melodic/setup.bash && source $HOME/catkin_ws/devel/setup.bash && cd $HOME/catkin_ws && /opt/ros/melodic/bin/catkin_make_isolated -j$numberproc && source /opt/ros/melodic/setup.bash && source $HOME/catkin_ws/devel/setup.bash'\" >> $HOME/.bashrc"
+				sh -c "echo \"\n# ROS Environment\" >> $HOME/.bashrc" || ErrorTrue
+				sh -c "echo \"alias eb='/bin/nano $HOME/.bashrc'\" >> $HOME/.bashrc" || ErrorTrue
+				sh -c "echo \"alias sb='source $HOME/.bashrc'\" >> $HOME/.bashrc" || ErrorTrue
+				sh -c "echo \"alias gc='/usr/bin/git clone'\" >> $HOME/.bashrc" || ErrorTrue
+				sh -c "echo \"alias gs='/usr/bin/git status'\" >> $HOME/.bashrc" || ErrorTrue
+				sh -c "echo \"alias gp='/usr/bin/git pull'\" >> $HOME/.bashrc" || ErrorTrue
+				sh -c "echo \"alias cw='cd $HOME/catkin_ws'\" >> $HOME/.bashrc" || ErrorTrue
+				sh -c "echo \"alias cs='cd $HOME/catkin_ws/src'\" >> $HOME/.bashrc" || ErrorTrue
+				sh -c "echo \"alias cm='source /opt/ros/melodic/setup.bash && source $HOME/catkin_ws/devel/setup.bash && cd $HOME/catkin_ws && /opt/ros/melodic/bin/catkin_make -j$numberproc && source /opt/ros/melodic/setup.bash && source $HOME/catkin_ws/devel/setup.bash'\" >> $HOME/.bashrc" || ErrorTrue
+				sh -c "echo \"alias cmi='source /opt/ros/melodic/setup.bash && source $HOME/catkin_ws/devel/setup.bash && cd $HOME/catkin_ws && /opt/ros/melodic/bin/catkin_make -j$numberproc install && source /opt/ros/melodic/setup.bash && source $HOME/catkin_ws/devel/setup.bash'\" >> $HOME/.bashrc" || ErrorTrue
+				sh -c "echo \"alias cmiso='source /opt/ros/melodic/setup.bash && source $HOME/catkin_ws/devel/setup.bash && cd $HOME/catkin_ws && /opt/ros/melodic/bin/catkin_make_isolated -j$numberproc && source /opt/ros/melodic/setup.bash && source $HOME/catkin_ws/devel/setup.bash'\" >> $HOME/.bashrc" || ErrorTrue
 
-				sh -c "echo \"source /opt/ros/melodic/setup.bash\" >> $HOME/.bashrc"
-				sh -c "echo \"source $HOME/catkin_ws/devel/setup.bash\" >> $HOME/.bashrc"
+				sh -c "echo \"source /opt/ros/melodic/setup.bash\" >> $HOME/.bashrc" || ErrorTrue
+				sh -c "echo \"source $HOME/catkin_ws/devel/setup.bash\" >> $HOME/.bashrc" || ErrorTrue
 
-				sh -c "echo \"export ROS_MASTER_URI=http://localhost:11311\" >> $HOME/.bashrc"
-				sh -c "echo \"export ROS_HOSTNAME=localhost\" >> $HOME/.bashrc"
+				sh -c "echo \"export ROS_MASTER_URI=http://localhost:11311\" >> $HOME/.bashrc" || ErrorTrue
+				sh -c "echo \"export ROS_HOSTNAME=localhost\" >> $HOME/.bashrc" || ErrorTrue
 				echo "[INFO] ROS Environment was exists in the environment"
 
 				source $HOME/.bashrc
 
 				echo
 				echo
-				confirmRestartInstall
+				confirmRestartInstall || ErrorTrue
 				exit 0
 			elif [[ $ROSSELECTION == 0 ]]; then
 				command_status="\u274c"
 				notify-send "ROS Installer $(echo -e $command_status)" \
-		  		  "Your OS not compatible with ROS Kinetic Kame!" \
+		  		  "Your OS not compatible with ROS melodic Kame!" \
 		  		  -i utilities-terminal \
           		  -t 5000
 				echo
-				echo "[ERROR] Sorry, Your OS not compatible with ROS Kinetic Kame!"
+				echo "[ERROR] Sorry, Your OS not compatible with ROS melodic Kame!"
 			fi
 		fi
 	break;
@@ -354,8 +369,8 @@ rosUninstall() {
 	echo "IF YOU WANT TO CANCEL, PRESS [CTRL] + [C]"
 	echo
 	echo "[UNINSTALER] Uninstalling ROS... "
-	sudo apt-get remove ros-melodic* --purge --assume-yes 2>/dev/null
-	sudo apt-get purge ros-kinetic* --purge --assume-yes 2>/dev/null
+	sudo apt-get remove ros-melodic* --purge --assume-yes 2>/dev/null || ErrorTrue
+	sudo apt-get purge ros-kinetic* --purge --assume-yes 2>/dev/null || ErrorTrue
 	sudo apt-get autoremove --purge --assume-yes 2>/dev/null
 	echo "[UNINSTALER] Complete Uninstall ROS!!"
 	confirmRestartUninstall
@@ -378,8 +393,7 @@ help() {
 ROS Installer $VERSION $EDITION
 Usage: Ros-Installer [options]
 
-ROS Installer is a tool to install ROS easy with this file.
-So you can install or uninstall ROS that you want.
+ROS Installer is a tool to install ROS by run once time.
 
 Available commands:
   h, help, -h, --help              See help in ros installer
@@ -396,5 +410,5 @@ case "$1" in
 	v|-v|--version|version) echo "ROS Installer v.$VERSION";;
 	i|-i|--install|install) rosInstaller;;
 	u|-u|--uninstall|uninstall) rosUninstall;;
-	*) usage && echo "See \"./Ros-Installer -h\" for more usage";;
+	*) usage && echo "See \"./Ros-Installer --help\" for more usage";;
 esac
