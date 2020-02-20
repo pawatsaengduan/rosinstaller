@@ -1,19 +1,20 @@
 #!/bin/bash
 # Create by Pawat Saengduan
-
+ 	
 # Setup Variables
 SHELL=/bin/bash
 VERSION=1.3
 EDITION=BETA
-osver16=`lsb_release -a 2>/dev/null | grep -o 'xenial' 2>/dev/null`
-osver18=`lsb_release -a 2>/dev/null | grep -o 'bionic' 2>/dev/null`
+osver16=`lsb_release -a 2>/dev/null | grep 'Codename' 2>/dev/null`
+osver18=`lsb_release -a 2>/dev/null | grep 'Codename' 2>/dev/null`
 numberproc=`nproc`
 command_status="\u274c"	
 
 # Need Sudo
-echo "[INSTALLER] INSTALL DEPENDENCIES LIBRARIES"
+echo "[INSTALLER] WAITING FOR SUDO PERMISSION..."
 needSudo1=`sudo apt-get install notify-osd pulseaudio-utils libnotify-bin --assume-yes 2>/dev/null` || ErrorTrue
 needSudo2=`sudo apt-get install libnotify-bin notify-osd --assume-yes --reinstall 2>/dev/null` || ErrorTrue
+
 ## <<FUNCTIONS
 # DownloadKeys
 DownloadKeys() {
@@ -26,28 +27,48 @@ ErrorTrue() {
 	  	"An error was occurred, Please try again later" \
 		-i utilities-terminal \
         -t 5000
+    echo
+    echo
+    echo
+    echo ----------------------------------------------------------
+    echo
+    echo                   An ERROR was occurred.                  
+    echo
+    echo ----------------------------------------------------------
 	exit 127
 }
 
 # Confirm Restart Functions
 confirmRestartInstall() {
-	command_status="\u2705"
-	notify-send "ROS Installer $(echo -e $command_status)" \
-	  "Install Complete" \
-	  -i utilities-terminal \
-      -t 3800
-	read -r -p "Do you want to exit your terminal right now? [Y/n] " RESTARTING
 	if [ -e /opt/ros/kinetic/setup.bash ]; then
+		command_status="\u2705"
+		notify-send "ROS Installer $(echo -e $command_status)" \
+		  "Install Complete" \
+		  -i utilities-terminal \
+	      -t 3800
+		read -r -p "Do you want to exit your terminal right now? [Y/n] " RESTARTING
 		case "$RESTARTING" in
 			[yY][eE][sS] | [yY] ) echo "[INSTALLER] Complete Install!" && source $HOME/.bashrc && reset && source /opt/ros/kinetic/setup.bash && clear && exit 0;;
 			[nN][oO] | [nN] | [aA][bB][oO][rR][tT] | * ) echo "[INSTALLER] Complete Install!, Please re-source .bashrc or restart terminal!";;
 		esac
 	elif [ -e /opt/ros/melodic/setup.bash ]; then
+		command_status="\u2705"
+		notify-send "ROS Installer $(echo -e $command_status)" \
+		  "Install Complete" \
+		  -i utilities-terminal \
+	      -t 3800
+		read -r -p "Do you want to exit your terminal right now? [Y/n] " RESTARTING
 		case "$RESTARTING" in
 			[yY][eE][sS] | [yY] ) echo "[INSTALLER] Complete Install!" && source $HOME/.bashrc && reset && source /opt/ros/melodic/setup.bash && clear && exit 0;;
 			[nN][oO] | [nN] | [aA][bB][oO][rR][tT] | * ) echo "[INSTALLER] Complete Install!, Please re-source .bashrc or restart terminal!";;
 		esac
 	else
+		notify-send "ROS Installer $(echo -e $command_status)" \
+	  	"The installer can't install ROS completely" \
+		-i utilities-terminal \
+        -t 5000
+
+        exit 125
 	fi
 
 }
@@ -71,10 +92,10 @@ rosInstaller() {
 	echo
 	echo "  Selection    ROS Distro        Linux Distro       Status"
 	echo "-------------------------------------------------------"
-	if [[ $osver16 == "xenial" || $osver16 == "sylvia" || $osver16 == "sonya" || $osver16 == "serena" || $osver16 == "sarah" ]]; then
+	if [[ $osver16 =~ "xenial" || $osver16 =~ "sylvia" || $osver16 =~ "sonya" || $osver16 =~ "serena" || $osver16 =~ "sarah" ]]; then
 		echo "* 0            Kinetic Kame       Xenial (16.04)    auto mode"
 		echo "  1            Melodic Morenia    Bionic (18.04)    manual mode"
-	elif [[ $osver18 == "bionic" || $osver18 == "trica" || $osver18 == "tina" || $osver18 == "tessa" || $osver18 == "tara" ]]; then
+	elif [[ $osver18 =~ "bionic" || $osver18 =~ "tricia" || $osver18 =~ "tina" || $osver18 =~ "tessa" || $osver18 =~ "tara" ]]; then
 		echo "  0            Kinetic Kame       Xenial (16.04)    manual mode"
 		echo "* 1            Melodic Morenia    Bionic (18.04)    auto mode"
 	else
@@ -88,10 +109,10 @@ rosInstaller() {
 		echo "  |   |-- Ubuntu 16.04 LTS (Xenial)  >>>  ROS Kinetic Kame"
 		echo "  |   |-- Ubuntu 18.04 LTS (Bionic)  >>>  ROS Melodic Morenia"
 		echo "  |"
-		echo "  |-- + Linux Mint Distribution: ( Installer is not supported right now. )"
+		echo "  |-- + Linux Mint Distribution: "
 		echo "      |"
-		echo "      |-- Linux Mint 18.x  (Ubuntu Distro Xenial)  >>>  ROS Kinetic Kame"
-		echo "      |-- Linux Mint 19.x  (Ubuntu Distro Bionic)  >>>  ROS Melodic Morenia"
+		echo "      |-- Linux Mint 18.x  (Xenial based on Ubuntu)  >>>  ROS Kinetic Kame"
+		echo "      |-- Linux Mint 19.x  (Bionic based on Ubuntu)  >>>  ROS Melodic Morenia"
 		echo
 		notify-send "ROS Installer $(echo -e $command_status)" \
 		  "Your OS not compatible with ROS" \
@@ -113,10 +134,10 @@ rosInstaller() {
 		echo
 		echo "  Selection    ROS Distro        Linux Distro       Status"
 		echo "-------------------------------------------------------"
-		if [[ $osver16 == "xenial" || $osver16 == "sylvia" || $osver16 == "sonya" || $osver16 == "serena" || $osver16 == "sarah" ]]; then
+		if [[ $osver16 =~ "xenial" || $osver16 =~ "sylvia" || $osver16 =~ "sonya" || $osver16 =~ "serena" || $osver16 =~ "sarah" ]]; then
 			echo "* 0            Kinetic Kame       Xenial (16.04)    auto mode"
 			echo "  1            Melodic Morenia    Bionic (18.04)    manual mode"
-		elif [[ $osver18 == "bionic" || $osver18 == "trica" || $osver18 == "tina" || $osver18 == "tessa" || $osver18 == "tara" ]]; then
+		elif [[ $osver18 =~ "bionic" || $osver18 =~ "tricia" || $osver18 =~ "tina" || $osver18 =~ "tessa" || $osver18 =~ "tara" ]]; then
 			echo "  0            Kinetic Kame       Xenial (16.04)    manual mode"
 			echo "* 1            Melodic Morenia    Bionic (18.04)    auto mode"
 		fi
@@ -128,7 +149,7 @@ rosInstaller() {
 	done;
 
 	while true; do
-		if [[ $osver16 == "xenial" || $osver16 == "sylvia" || $osver16 == "sonya" || $osver16 == "serena" || $osver16 == "sarah" ]]; then
+		if [[ $osver16 =~ "xenial" || $osver16 =~ "sylvia" || $osver16 =~ "sonya" || $osver16 =~ "serena" || $osver16 =~ "sarah" ]]; then
 			if [[ $ROSSELECTION == 0 || -z $ROSSELECTION ]]; then
 				echo
 				echo
@@ -241,7 +262,7 @@ rosInstaller() {
 			fi
 		fi
 
-		if [[ $osver18 == "bionic" || $osver18 == "trica" || $osver18 == "tina" || $osver18 == "tessa" || $osver18 == "tara" ]]; then
+		if [[ $osver18 =~ "bionic" || $osver18 =~ "tricia" || $osver18 =~ "tina" || $osver18 =~ "tessa" || $osver18 =~ "tara" ]]; then
 			if [[ $ROSSELECTION == 1 || -z $ROSSELECTION ]]; then
 				echo
 				echo
@@ -369,8 +390,14 @@ rosUninstall() {
 	echo "IF YOU WANT TO CANCEL, PRESS [CTRL] + [C]"
 	echo
 	echo "[UNINSTALER] Uninstalling ROS... "
-	sudo apt-get remove ros-melodic* --purge --assume-yes 2>/dev/null || ErrorTrue
-	sudo apt-get purge ros-kinetic* --purge --assume-yes 2>/dev/null || ErrorTrue
+	if [ -d /opt/ros/kinetic ]; then
+		sudo apt-get purge ros-kinetic* --purge --assume-yes || ErrorTrue
+	elif [ -d /opt/ros/melodic ]; then
+		sudo apt-get remove ros-melodic* --purge --assume-yes || ErrorTrue
+	else
+		echo "[UNINSTALER] Not found ROS in System."
+		exit 7
+	fi
 	sudo apt-get autoremove --purge --assume-yes 2>/dev/null
 	echo "[UNINSTALER] Complete Uninstall ROS!!"
 	confirmRestartUninstall
@@ -407,7 +434,7 @@ EOF
 # Case agruments selection
 case "$1" in
 	h|-h|--help|help) help;;
-	v|-v|--version|version) echo "ROS Installer v.$VERSION";;
+	v|-v|--version|version) echo "ROS Installer v. $VERSION";;
 	i|-i|--install|install) rosInstaller;;
 	u|-u|--uninstall|uninstall) rosUninstall;;
 	*) usage && echo "See \"./Ros-Installer --help\" for more usage";;
